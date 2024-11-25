@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador Léxico</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Analisador Léxico</h2>
+        <input type="text" id="wordInput" placeholder="Digite uma palavra">
+        <button onclick="addWord()">Adicionar Palavra</button>
+        <button onclick="generateWord()">Gerar Palavra</button>
+
+        <div class="stored-words" id="storedWords">Palavras armazenadas:</div>
+
+        <div class="table-container">
+            <table id="wordTable">
+                <thead>
+                    <tr id="headerRow">
+                        <th>Estados</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <input type="text" id="searchInput" placeholder="Pesquise a palavra" oninput="searchWord()" onkeydown="checkIfStored(event)">
+
+        <div class="status-container" id="statusContainer">
+            <h3>Status das Palavras:</h3>
+            <div class="status-columns">
+                <div>
+                    <h4>Armazenadas (✓)</h4>
+                    <ul id="usedWordsList"></ul>
+                </div>
+                <div>
+                    <h4>Não Armazenadas (X)</h4>
+                    <ul id="unusedWordsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
