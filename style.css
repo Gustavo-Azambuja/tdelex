@@ -74,7 +74,7 @@ th {
     padding: 5px;
     margin: 5px;
     border-radius: 5px;
-    min-width: 50px; /* Tamanho mínimo para a borda */
+    min-width: 50px;
     text-align: center;
 }
 
