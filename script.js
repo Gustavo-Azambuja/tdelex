@@ -56,7 +56,7 @@ function deleteWord(word) {
     const wordIndex = words.indexOf(word);
     if (wordIndex > -1) {
         words.splice(wordIndex, 1); 
-        deleteTableEntries(word); /
+        deleteTableEntries(word);
         deleteWordStatus(word); 
         updateStoredWords(); 
     }
