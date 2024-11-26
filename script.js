@@ -1,8 +1,8 @@
 const words = [];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-const stateTransitions = {}; // Transições globais entre estados
+const stateTransitions = {}; 
 const wordStatus = {};
-let globalStateCounter = 1; // Contador global para rastrear os estados (inicia após q0)
+let globalStateCounter = 1;
 
 function initializeTable() {
     const headerRow = document.getElementById('headerRow');
@@ -55,26 +55,26 @@ function updateStoredWords() {
 function deleteWord(word) {
     const wordIndex = words.indexOf(word);
     if (wordIndex > -1) {
-        words.splice(wordIndex, 1); // Remove a palavra do array de palavras
-        deleteTableEntries(word); // Remove as entradas da tabela
-        deleteWordStatus(word); // Remove do status da palavra
-        updateStoredWords(); // Atualiza a lista de palavras armazenadas
+        words.splice(wordIndex, 1); 
+        deleteTableEntries(word); /
+        deleteWordStatus(word); 
+        updateStoredWords(); 
     }
 }
 
 function deleteTableEntries(word) {
-    let currentState = 'q0'; // Sempre começamos no estado inicial
+    let currentState = 'q0'; 
 
     for (let i = 0; i < word.length; i++) {
         const currentLetter = word[i];
         const cell = document.getElementById(`${currentState}-${currentLetter}`);
 
         if (cell && cell.textContent) {
-            const nextState = cell.textContent.replace('*', ''); // Remove '*' se presente
-            cell.textContent = ''; // Limpa o conteúdo da célula
-            currentState = nextState; // Atualiza o estado atual para o próximo
+            const nextState = cell.textContent.replace('*', ''); 
+            cell.textContent = ''; 
+            currentState = nextState;
         } else {
-            break; // Sai do loop se não houver transição válida
+            break; 
         }
     }
 }
@@ -90,7 +90,7 @@ function updateTable(word) {
 
     for (let i = 0; i < word.length; i++) {
         const currentLetter = word[i];
-        const nextState = `q${globalStateCounter}`; // Usa o próximo estado global
+        const nextState = `q${globalStateCounter}`;
 
         if (!stateTransitions[currentState]) {
             stateTransitions[currentState] = {};
@@ -112,13 +112,13 @@ function updateTable(word) {
 
         const cell = document.getElementById(`${currentState}-${currentLetter}`);
         if (cell && !cell.textContent) {
-            // Marca a transição como parte da palavra atual
+     
             cell.textContent = (i === word.length - 1) ? `${nextState}*` : nextState;
         }
 
         stateTransitions[currentState][currentLetter] = nextState;
         currentState = nextState;
-        globalStateCounter++; // Incrementa o contador global
+        globalStateCounter++; 
     }
 }
 
@@ -138,21 +138,20 @@ function generateWord() {
 function searchWord() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
     const allCells = document.querySelectorAll('#wordTable td');
-    allCells.forEach(cell => cell.classList.remove('highlight-green', 'highlight-red')); // Remove destaques anteriores
+    allCells.forEach(cell => cell.classList.remove('highlight-green', 'highlight-red')); 
 
-    let currentState = 'q0'; // Começa no estado inicial
-    let isWordValid = true; // Verifica se a palavra existe no autômato
-
+    let currentState = 'q0'; 
+    let isWordValid = true;
     for (let i = 0; i < searchInput.length; i++) {
         const letter = searchInput[i];
         const cell = document.getElementById(`${currentState}-${letter}`);
 
         if (cell && cell.textContent) {
-            const nextState = cell.textContent.replace('*', ''); // Remove o '*' para comparar o próximo estado
-            cell.classList.add('highlight-green'); // Destaca como válido
-            currentState = nextState; // Atualiza o estado atual
+            const nextState = cell.textContent.replace('*', ''); 
+            cell.classList.add('highlight-green'); 
+            currentState = nextState; 
         } else {
-            // Se não houver transição válida, marca como inválido e interrompe
+          
             if (cell) cell.classList.add('highlight-red');
             isWordValid = false;
             break;
