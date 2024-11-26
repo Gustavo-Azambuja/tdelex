@@ -1,11 +1,12 @@
 const words = [];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-const stateTransitions = {};
-const wordStatus = {}; 
+const stateTransitions = {}; // Transições globais entre estados
+const wordStatus = {};
+let globalStateCounter = 1; // Contador global para rastrear os estados (inicia após q0)
 
 function initializeTable() {
     const headerRow = document.getElementById('headerRow');
-    headerRow.innerHTML = '<th>δ</th>'; 
+    headerRow.innerHTML = '<th>δ</th>';
     for (let letter of alphabet) {
         const th = document.createElement('th');
         th.textContent = letter.toUpperCase();
@@ -30,33 +31,26 @@ function updateStoredWords() {
     const storedWords = document.getElementById('storedWords');
     storedWords.innerHTML = "Palavras armazenadas: ";
     words.forEach(word => {
-        // Cria um contêiner para a palavra com a classe de estilo
         const wordContainer = document.createElement('div');
         wordContainer.classList.add('stored-word-container');
 
-        // Cria um elemento de texto para a palavra
         const wordSpan = document.createElement('span');
         wordSpan.textContent = word;
 
-        // Cria o botão de exclusão (lixeira) com a classe de estilo
         const deleteBtn = document.createElement('button');
         deleteBtn.classList.add('delete-btn');
 
-        // Adiciona o ícone de lixeira
         const trashIcon = document.createElement('i');
         trashIcon.classList.add('fas', 'fa-trash');
 
-        // Adiciona o evento de clique para excluir a palavra
         deleteBtn.onclick = () => deleteWord(word);
 
-        // Adiciona o ícone ao botão e o botão ao contêiner
         deleteBtn.appendChild(trashIcon);
         wordContainer.appendChild(deleteBtn);
         wordContainer.appendChild(wordSpan);
         storedWords.appendChild(wordContainer);
     });
 }
-
 
 function deleteWord(word) {
     const wordIndex = words.indexOf(word);
@@ -69,32 +63,39 @@ function deleteWord(word) {
 }
 
 function deleteTableEntries(word) {
+    let currentState = 'q0'; // Sempre começamos no estado inicial
+
     for (let i = 0; i < word.length; i++) {
         const currentLetter = word[i];
-        const currentState = `q${i}`;
         const cell = document.getElementById(`${currentState}-${currentLetter}`);
 
-        if (cell) {
+        if (cell && cell.textContent) {
+            const nextState = cell.textContent.replace('*', ''); // Remove '*' se presente
             cell.textContent = ''; // Limpa o conteúdo da célula
+            currentState = nextState; // Atualiza o estado atual para o próximo
+        } else {
+            break; // Sai do loop se não houver transição válida
         }
     }
 }
 
 function deleteWordStatus(word) {
-    delete wordStatus[word]; // Remove a palavra do status
-    updateWordStatus(); // Atualiza a exibição do status das palavras
+    delete wordStatus[word];
+    updateWordStatus();
 }
 
 function updateTable(word) {
     const tableBody = document.getElementById('tableBody');
+    let currentState = 'q0';
 
     for (let i = 0; i < word.length; i++) {
         const currentLetter = word[i];
-        const nextState = `q${i + 1}`;
-        const currentState = `q${i}`;
+        const nextState = `q${globalStateCounter}`; // Usa o próximo estado global
 
         if (!stateTransitions[currentState]) {
+            stateTransitions[currentState] = {};
             const row = document.createElement('tr');
+
             const firstCell = document.createElement('td');
             firstCell.textContent = currentState;
             row.appendChild(firstCell);
@@ -107,17 +108,19 @@ function updateTable(word) {
             }
 
             tableBody.appendChild(row);
-            stateTransitions[currentState] = {};
         }
 
         const cell = document.getElementById(`${currentState}-${currentLetter}`);
         if (cell && !cell.textContent) {
-            // Verifica se a letra é a última da palavra e adiciona o asterisco
+            // Marca a transição como parte da palavra atual
             cell.textContent = (i === word.length - 1) ? `${nextState}*` : nextState;
         }
+
+        stateTransitions[currentState][currentLetter] = nextState;
+        currentState = nextState;
+        globalStateCounter++; // Incrementa o contador global
     }
 }
-
 
 function generateWord() {
     const randomLength = Math.floor(Math.random() * 5) + 3;
@@ -135,29 +138,33 @@ function generateWord() {
 function searchWord() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
     const allCells = document.querySelectorAll('#wordTable td');
-    allCells.forEach(cell => cell.classList.remove('highlight-green', 'highlight-red'));
+    allCells.forEach(cell => cell.classList.remove('highlight-green', 'highlight-red')); // Remove destaques anteriores
 
-    let currentState = 'q0';
+    let currentState = 'q0'; // Começa no estado inicial
+    let isWordValid = true; // Verifica se a palavra existe no autômato
+
     for (let i = 0; i < searchInput.length; i++) {
         const letter = searchInput[i];
         const cell = document.getElementById(`${currentState}-${letter}`);
 
-        if (cell) {
-            const expectedState = `q${i + 1}`;
-            const expectedFinalState = `${expectedState}*`;
-
-            // Verifica se o conteúdo da célula é o estado esperado ou o estado final com asterisco
-            if (cell.textContent === expectedState || cell.textContent === expectedFinalState) {
-                cell.classList.add('highlight-green');
-                currentState = `q${i + 1}`;
-            } else {
-                cell.classList.add('highlight-red');
-                currentState = `q${i + 1}`;
-            }
+        if (cell && cell.textContent) {
+            const nextState = cell.textContent.replace('*', ''); // Remove o '*' para comparar o próximo estado
+            cell.classList.add('highlight-green'); // Destaca como válido
+            currentState = nextState; // Atualiza o estado atual
+        } else {
+            // Se não houver transição válida, marca como inválido e interrompe
+            if (cell) cell.classList.add('highlight-red');
+            isWordValid = false;
+            break;
         }
     }
-}
 
+    if (isWordValid && currentState.includes('*')) {
+        console.log(`A palavra "${searchInput}" está na tabela.`);
+    } else {
+        console.log(`A palavra "${searchInput}" não está na tabela.`);
+    }
+}
 
 function checkIfStored(event) {
     if (event.key === ' ') {
@@ -165,11 +172,11 @@ function checkIfStored(event) {
         const word = searchInput.value.trim().toLowerCase();
 
         if (words.includes(word)) {
-            wordStatus[word] = true; 
+            wordStatus[word] = true;
         } else {
-            wordStatus[word] = false;  
+            wordStatus[word] = false;
         }
-        
+
         searchInput.value = '';
         searchWord();
         updateWordStatus();
@@ -179,8 +186,8 @@ function checkIfStored(event) {
 function updateWordStatus() {
     const usedWordsList = document.getElementById('usedWordsList');
     const unusedWordsList = document.getElementById('unusedWordsList');
-    usedWordsList.innerHTML = ''; 
-    unusedWordsList.innerHTML = ''; 
+    usedWordsList.innerHTML = '';
+    unusedWordsList.innerHTML = '';
 
     for (const word in wordStatus) {
         const listItem = document.createElement('li');
